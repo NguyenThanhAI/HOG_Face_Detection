@@ -8,7 +8,7 @@ import numpy as np
 from skimage import io, color, transform, feature
 from skimage.transform import pyramid_gaussian
 import cv2
-
+import imutils
 from nms import non_max_suppression
 
 def sliding_window(image, window_size, step_size):
@@ -18,8 +18,8 @@ def sliding_window(image, window_size, step_size):
 
 
 if __name__ == "__main__":
-    image_path = r"C:\Users\Thanh_Tuyet\Downloads\practical-face-detection\practical-face-detection\images\img1.jpg"
-    #image_path = r"C:\Users\Thanh_Tuyet\Downloads\167877cf2d05f45bad14.jpg"
+    #image_path = r"images\img1.jpg"
+    image_path = r"images\167877cf2d05f45bad14.jpg"
     model_path = "svm_model.pkl"
     model = joblib.load(model_path)
     (win_w, win_h) = (24, 24)
@@ -29,8 +29,10 @@ if __name__ == "__main__":
     orientations = 9
     pixels_per_cell = (8, 8)
     cells_per_block = (2, 2)
+    threshold = 1.0
     #img = io.imread(image_path)
     img = cv2.imread(image_path)
+    img = imutils.resize(img, width=600)
     scale = 0
     detections = []
     for resized in pyramid_gaussian(img, downscale=1.5):
@@ -39,14 +41,15 @@ if __name__ == "__main__":
             if window.shape[0] != win_h or window.shape[1] !=win_w or window.shape[2] != 3:
                 continue
             window=color.rgb2gray(window)
+            window = (window - np.mean(window)) / (np.std(window) + 0.001)
             fds = feature.hog(window, orientations, pixels_per_cell, cells_per_block, block_norm='L2')
             fds = fds.reshape(1, -1)
             pred = model.predict(fds)
             
             if pred == 1:
-                if model.decision_function(fds) > 0.5: 
-                    print("Detection:: Location -> ({}, {})".format(x, y))
-                    print("Scale ->  {} | Confidence Score {} \n".format(scale,model.decision_function(fds)))
+                if model.decision_function(fds) > threshold: 
+                    #print("Detection:: Location -> ({}, {})".format(x, y))
+                    #print("Scale ->  {} | Confidence Score {} \n".format(scale,model.decision_function(fds)))
                     detections.append((int(x * (downscale**scale)), int(y * (downscale**scale)), model.decision_function(fds),
                                        int(window_size[0]*(downscale**scale)), # create a list of all the predictions found
                                        int(window_size[1]*(downscale**scale))))
@@ -64,5 +67,5 @@ if __name__ == "__main__":
     
     for (xA, yA, xB, yB) in pick:
         cv2.rectangle(img, (xA, yA), (xB, yB), (0,255,0), 2)
-    cv2.imshow("Raw Detections after NMS", img)
+    cv2.imshow("Result after NMS", img)
     cv2.waitKey(0)
