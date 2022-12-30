@@ -70,4 +70,4 @@ if __name__ == "__main__":
     cv2.imshow("Result after NMS", img)
     cv2.waitKey(0)
     
-    cv2.imwrite(os.path.join("images", "result_" + os.path.basename(image_path)), img)
+    cv2.imwrite(os.path.join("results", "result_" + os.path.basename(image_path)), img)
