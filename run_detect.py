@@ -30,9 +30,10 @@ if __name__ == "__main__":
     pixels_per_cell = (8, 8)
     cells_per_block = (2, 2)
     threshold = 1.0
+    nmsthreshold = 0.3
     #img = io.imread(image_path)
     img = cv2.imread(image_path)
-    #img = imutils.resize(img, width=600)
+    img = imutils.resize(img, width=600)
     scale = 0
     detections = []
     for resized in pyramid_gaussian(img, downscale=1.5):
@@ -63,7 +64,7 @@ if __name__ == "__main__":
     sc = [score[0] for (x, y, score, w, h) in detections]
     print("detection confidence score: ", sc)
     sc = np.array(sc)
-    pick = non_max_suppression(rects, probs = sc, overlapThresh = 0.3)
+    pick = non_max_suppression(rects, probs=sc, overlapThresh=nmsthreshold)
     
     for (xA, yA, xB, yB) in pick:
         cv2.rectangle(img, (xA, yA), (xB, yB), (0,255,0), 2)
