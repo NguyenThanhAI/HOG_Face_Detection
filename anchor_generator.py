@@ -32,7 +32,7 @@ if __name__ == "__main__":
     threshold = 1.0
     #img = io.imread(image_path)
     img = cv2.imread(image_path)
-    img = imutils.resize(img, width=600)
+    #img = imutils.resize(img, width=600)
     scale = 0
     detections = []
     for resized in pyramid_gaussian(img, downscale=1.5):
@@ -69,3 +69,5 @@ if __name__ == "__main__":
         cv2.rectangle(img, (xA, yA), (xB, yB), (0,255,0), 2)
     cv2.imshow("Result after NMS", img)
     cv2.waitKey(0)
+    
+    cv2.imwrite(os.path.join("images", "result_" + os.path.basename(image_path)), img)
