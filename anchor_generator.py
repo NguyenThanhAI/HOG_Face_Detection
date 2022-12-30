@@ -14,9 +14,9 @@ base_dim: int = 50
 scales = [0.25, 0.5, 0.75, 1., 1.25, 1.5, 1.75, 2.]
 ratios = [1, 1.2]
 offset = 0.5
-stride = 0.2
+stride = 0.1
 
-threshold = 0.99
+threshold = 0.9
 
 #width = base_dim * scales[:, np.newaxis] / np.sqrt(ratios[np.newaxis, :])
 #height = base_dim * scales[:, np.newaxis] * np.sqrt(ratios[np.newaxis, :])
@@ -94,6 +94,7 @@ for scale in dict_crop_images.keys():
         crop_images = dict_crop_images[scale][ratio]
         for img in tqdm(crop_images):
             resized_img = transform.resize(img, output_shape=(24, 24))
+            resized_img = (resized_img - np.mean(resized_img)) / np.std(resized_img)
             feat = feature.hog(image=resized_img, orientations=9, cells_per_block=(2, 2), block_norm="L2")
             features.append(feat)
         features = np.stack(features, axis=0)
@@ -116,6 +117,8 @@ for scale in hog_features.keys():
         probs[scale][ratio] = predict_prob
         
         pos_anchor = np.where(predict_prob > threshold)[0]
+        '''predict_prob = model.predict(features)
+        pos_anchor = np.where(predict_prob == 1)[0]'''
         if pos_anchor.shape[0] > 0:
             pos_boxes = anchors[scale][ratio][pos_anchor]
             pos_probs = predict_prob[pos_anchor]
